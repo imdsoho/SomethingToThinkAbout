@@ -1,52 +1,15 @@
 package org.example.neighborNode;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class Main {
     ArrayList<Node> nodes = new ArrayList<>();
     Map<String,Set<String>> graph = new HashMap<>();
-
-    public String[] getRawData(String path){
-        String[] rawData = new String[20];
-        String d1 = "M1,M2";
-        String d2 = "M1,M3";
-        String d3 = "M5,M7";
-        String d4 = "M8,M9";
-        String d5 = "M7,M8";
-        String d6 = "M3,M8";
-        String d7 = "M2,M5";
-        String d8 = "M1,M7";
-        String d9 = "M6,M7";
-        String d10 = "M10,M12";
-        String d11 = "M12,M13";
-        String d12 = "M12,M10";
-        String d13 = "M15,M16";
-        String d14 = "M16,M17";
-        String d15 = "M17,M15";
-
-        rawData[0] = d1;
-        rawData[1] = d2;
-        rawData[2] = d3;
-        rawData[3] = d4;
-        rawData[4] = d5;
-        rawData[5] = d6;
-        rawData[6] = d7;
-        rawData[7] = d8;
-        rawData[8] = d9;
-        rawData[9] = d10;
-        rawData[10] = d11;
-        rawData[11] = d12;
-        rawData[12] = d13;
-        rawData[13] = d14;
-        rawData[14] = d15;
-        return rawData;
-    }
 
     public String getFilePath(String fileName){
         URL resource;
@@ -67,9 +30,8 @@ public class Main {
         String filePath = getFilePath(fileName);
 
         List<String> content = new ArrayList<>();
-        //try (BufferedReader br = new BufferedReader(new FileReader(filePath, StandardCharsets.UTF_8))) {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "euc-kr"))) {
-             String line;
+            String line;
 
             while ((line = br.readLine()) != null) {
                 if(includeTitle){
@@ -101,13 +63,12 @@ public class Main {
     }
 
     public void makeData(String path){
-        //String[] rawData = getRawData(path);
         String[] rawData = getRawDataFromCSV(path, false);
 
         for (String rawDatum : rawData) {
             if (rawDatum != null && !rawDatum.isEmpty()){
                 String[] data = rawDatum.split(",", -1);
-                if(data[8].equals("동일")){
+                if(data[8].equals("동일")) {
                     Node node = new Node(data[0], data[3]);
                     nodes.add(node);
                 }
@@ -134,6 +95,7 @@ public class Main {
                 Set<String> temp = new HashSet<>();
 
                 start = node.getStart();
+                temp.add(start);
                 temp.add(node.getEnd());
                 graph.put(start, temp);
             }
@@ -145,6 +107,7 @@ public class Main {
                     Set<String> temp = new HashSet<>();
 
                     start = node.getStart();
+                    temp.add(start);
                     temp.add(node.getEnd());
                     graph.put(start, temp);
                 }
@@ -156,12 +119,6 @@ public class Main {
         makeGraphByKey();
 
         makeGraphByValue();
-
-        graph.forEach((k, v) -> {
-            System.out.println(k + ":" + v);
-        });
-
-        System.out.println("OUTPUT Count : " + graph.size());
     }
 
     public void makeGraphByKey(){
@@ -197,8 +154,11 @@ public class Main {
 
     private int mergeNode(String[] keys, int idx, String key, Set<String> comp) {
         for(int j = 0; j < keys.length-idx; j++){
-            if(graph.get(keys[j]).containsAll(comp)){
-                String[] temp = graph.get(key).toArray(
+            HashSet<String> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
+            intersection.retainAll(comp);
+
+            if(!intersection.isEmpty()){
+                String[] temp = comp.toArray(
                         String[]::new
                 );
 
@@ -228,31 +188,13 @@ public class Main {
     }
 
     public void validate(){
-        Set<String> keys = new HashSet<>();
-
-        for (String key : graph.keySet()) {
-            //Set<String> value = graph.get(key);
-            keys.add(key);
-        }
-        System.out.println(keys.size());
-    }
-
-    public void writeFile(){
-        List<String> lines = Arrays.asList("Line 1: Hello", "Line 2: World", "Line 3: Java Files");
-        Path file = Paths.get("output.txt");
-
-        try {
-            // Writes all lines to the file, creating it if it doesn't exist.
-            // If the file already exists, it will be overwritten by default.
-            Files.write(file, lines);
-            System.out.println("Successfully wrote list to file using Files.write()");
-        } catch (IOException e) {
-            System.err.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();
-        }
+        Set<String> keys = new HashSet<>(graph.keySet());
+        System.out.println("Graph Size : " + keys.size());
     }
 
     public void run(){
+        long startTime = System.currentTimeMillis();
+
         String path = "files/ingredient_subset.csv";
         makeData(path);
 
@@ -262,9 +204,14 @@ public class Main {
 
         makeGraph();
 
-        //writeFile();
-
+//        graph.forEach((k, v) -> {
+//            System.out.println(k + ":" + v);
+//        });
         validate();
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        System.out.println("실행 시간: " + duration + "ms");
     }
 
     public static void main(String[] args) {
