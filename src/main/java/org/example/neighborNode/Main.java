@@ -1,9 +1,8 @@
 package org.example.neighborNode;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,8 +67,9 @@ public class Main {
         String filePath = getFilePath(fileName);
 
         List<String> content = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
+        //try (BufferedReader br = new BufferedReader(new FileReader(filePath, StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "euc-kr"))) {
+             String line;
 
             while ((line = br.readLine()) != null) {
                 if(includeTitle){
@@ -80,8 +80,8 @@ public class Main {
                 }
             }
         }
-        catch (IOException e){
-            System.out.println(e.getMessage());
+        catch (IOException ioe){
+            System.out.println(ioe.getMessage());
         }
 
         return content;
@@ -106,9 +106,11 @@ public class Main {
 
         for (String rawDatum : rawData) {
             if (rawDatum != null && !rawDatum.isEmpty()){
-                String[] data = rawDatum.split(",");
-                Node node = new Node(data[0], data[1]);
-                nodes.add(node);
+                String[] data = rawDatum.split(",", -1);
+                if(data[8].equals("동일")){
+                    Node node = new Node(data[0], data[3]);
+                    nodes.add(node);
+                }
             }
         }
     }
@@ -155,9 +157,9 @@ public class Main {
 
         makeGraphByValue();
 
-//        graph.forEach((k, v) -> {
-//            System.out.println(k + ":" + v);
-//        });
+        graph.forEach((k, v) -> {
+            System.out.println(k + ":" + v);
+        });
 
         System.out.println("OUTPUT Count : " + graph.size());
     }
@@ -225,6 +227,16 @@ public class Main {
         );
     }
 
+    public void validate(){
+        Set<String> keys = new HashSet<>();
+
+        for (String key : graph.keySet()) {
+            //Set<String> value = graph.get(key);
+            keys.add(key);
+        }
+        System.out.println(keys.size());
+    }
+
     public void writeFile(){
         List<String> lines = Arrays.asList("Line 1: Hello", "Line 2: World", "Line 3: Java Files");
         Path file = Paths.get("output.txt");
@@ -251,6 +263,8 @@ public class Main {
         makeGraph();
 
         //writeFile();
+
+        validate();
     }
 
     public static void main(String[] args) {
