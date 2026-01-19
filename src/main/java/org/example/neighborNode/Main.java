@@ -1,6 +1,9 @@
 package org.example.neighborNode;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,7 +13,7 @@ public class Main {
     ArrayList<Node> nodes = new ArrayList<>();
     Map<String,Set<String>> graph = new HashMap<>();
 
-    public String[] getRawDataByCSV(String path){
+    public String[] getRawData(String path){
         String[] rawData = new String[20];
         String d1 = "M1,M2";
         String d2 = "M1,M3";
@@ -46,12 +49,60 @@ public class Main {
         return rawData;
     }
 
-    public String[] getRawDataByExcel(String path){
-        return new String[1];
+    public String getFilePath(String fileName){
+        URL resource;
+        String filePath = "";
+
+        try{
+            resource = getClass().getClassLoader().getResource(fileName);
+            assert resource != null;
+            filePath = resource.getPath();
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return filePath;
+    }
+
+    public List<String> getFileContent(String fileName, boolean includeTitle){
+        String filePath = getFilePath(fileName);
+
+        List<String> content = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if(includeTitle){
+                    content.add(line);
+                }
+                else{
+                    includeTitle = true;
+                }
+            }
+        }
+        catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+
+        return content;
+    }
+
+    public String[] getRawDataFromCSV(String path, boolean includeTitle){
+        List<String> fileContent = getFileContent(path, includeTitle);
+
+        String [] rawData = new String[fileContent.size()];
+
+        int idx = 0;
+        for(String line : fileContent){
+            rawData[idx] = line;
+            idx++;
+        }
+        return rawData;
     }
 
     public void makeData(String path){
-        String[] rawData = getRawDataByCSV(path);
+        //String[] rawData = getRawData(path);
+        String[] rawData = getRawDataFromCSV(path, false);
 
         for (String rawDatum : rawData) {
             if (rawDatum != null && !rawDatum.isEmpty()){
@@ -104,9 +155,11 @@ public class Main {
 
         makeGraphByValue();
 
-        graph.forEach((k, v) -> {
-            System.out.println(k + ":" + v);
-        });
+//        graph.forEach((k, v) -> {
+//            System.out.println(k + ":" + v);
+//        });
+
+        System.out.println("OUTPUT Count : " + graph.size());
     }
 
     public void makeGraphByKey(){
@@ -188,7 +241,7 @@ public class Main {
     }
 
     public void run(){
-        String path = "";
+        String path = "files/ingredient_subset.csv";
         makeData(path);
 
         dataSort();
