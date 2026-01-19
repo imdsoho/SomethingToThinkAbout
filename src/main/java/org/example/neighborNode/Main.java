@@ -130,7 +130,7 @@ public class Main {
                 if(!intersection.isEmpty()){
                     graph.get(keys[j]).addAll(comp);
                     graph.get(key).clear();
-                };
+                }
             }
         }
 
