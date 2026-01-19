@@ -116,62 +116,25 @@ public class Main {
     }
 
     public void makeGraph(){
-        makeGraphByKey();
-
-        makeGraphByValue();
-    }
-
-    public void makeGraphByKey(){
         Set<String> ks = graph.keySet();
         String[] keys = ks.toArray(new String[0]);
 
-        int idx = 1;
-        for(int i = keys.length-1; i > 0; i--){
-            String key = keys[i];
-            Set<String> comp = new HashSet<>();
-            comp.add(key);
-
-            idx = mergeNode(keys, idx, key, comp);
-        }
-
-        cleanEmptyNode();
-    }
-
-    public void makeGraphByValue(){
-        Set<String> ks = graph.keySet();
-        String[] keys = ks.toArray(new String[0]);
-
-        int idx = 1;
-        for(int i = keys.length-1; i > 0; i--){
+        for(int i =0; i < keys.length; i++){
             String key = keys[i];
             Set<String> comp = graph.get(key);
 
-            idx = mergeNode(keys, idx, key, comp);
+            for(int j = i+1; j < keys.length; j++){
+                HashSet<String> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
+                intersection.retainAll(comp);
+
+                if(!intersection.isEmpty()){
+                    graph.get(keys[j]).addAll(comp);
+                    graph.get(key).clear();
+                };
+            }
         }
 
         cleanEmptyNode();
-    }
-
-    private int mergeNode(String[] keys, int idx, String key, Set<String> comp) {
-        for(int j = 0; j < keys.length-idx; j++){
-            HashSet<String> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
-            intersection.retainAll(comp);
-
-            if(!intersection.isEmpty()){
-                String[] temp = comp.toArray(
-                        String[]::new
-                );
-
-                for(String s : temp){
-                    graph.get(keys[j]).add(s);
-                }
-
-                graph.get(key).clear();
-            };
-        }
-        idx++;
-
-        return idx;
     }
 
     public void cleanEmptyNode(){
