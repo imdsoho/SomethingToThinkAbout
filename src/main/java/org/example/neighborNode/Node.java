@@ -2,8 +2,6 @@ package org.example.neighborNode;
 
 import lombok.*;
 
-import java.util.Objects;
-
 @Getter
 @Setter
 @ToString
@@ -12,7 +10,6 @@ import java.util.Objects;
 public class Node {
     private String start;
     private String end;
-
 
     /* Node.code 값만 사용하여 집합의 합집합 교집합을 구함 >> Main.v3 */
 //    private String code;
