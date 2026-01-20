@@ -1,5 +1,7 @@
 package org.example.neighborNode;
 
+import org.example.utils.FilesUtils;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,46 +13,9 @@ public class Main {
     ArrayList<Node> nodes = new ArrayList<>();
     Map<String,Set<String>> graph = new HashMap<>();
 
-    public String getFilePath(String fileName){
-        URL resource;
-        String filePath = "";
-
-        try{
-            resource = getClass().getClassLoader().getResource(fileName);
-            assert resource != null;
-            filePath = resource.getPath();
-        }
-        catch (Exception e){
-            System.out.println(e.getMessage());
-        }
-        return filePath;
-    }
-
-    public List<String> getFileContent(String fileName, boolean includeTitle){
-        String filePath = getFilePath(fileName);
-
-        List<String> content = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "euc-kr"))) {
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                if(includeTitle){
-                    content.add(line);
-                }
-                else{
-                    includeTitle = true;
-                }
-            }
-        }
-        catch (IOException ioe){
-            System.out.println(ioe.getMessage());
-        }
-
-        return content;
-    }
-
     public String[] getRawDataFromCSV(String path, boolean includeTitle){
-        List<String> fileContent = getFileContent(path, includeTitle);
+        FilesUtils filesUtils = new FilesUtils();
+        List<String> fileContent = filesUtils.getFileContentByStream(path, includeTitle);
 
         String [] rawData = new String[fileContent.size()];
 
