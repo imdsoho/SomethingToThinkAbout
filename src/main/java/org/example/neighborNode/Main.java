@@ -126,9 +126,9 @@ public class Main {
 
         makeGraph();
 
-//        graph.forEach((k, v) -> {
-//            System.out.println(k + ":" + v);
-//        });
+        graph.forEach((k, v) -> {
+            System.out.println(k + ":" + v);
+        });
         validate();
 
         long endTime = System.currentTimeMillis();
