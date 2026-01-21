@@ -10,5 +10,4 @@ import lombok.*;
 public class Node {
     private String start;
     private String end;
-
 }

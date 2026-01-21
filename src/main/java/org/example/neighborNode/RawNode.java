@@ -10,6 +10,8 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class RawNode {
-    private String node;
-    private String name;
+    private String start;
+    private String startNM;
+    private String end;
+    private String endNM;
 }

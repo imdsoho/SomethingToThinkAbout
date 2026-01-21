@@ -110,6 +110,7 @@ public class Main {
             for(int j = i+1; j < keys.length; j++){
                 HashSet<NodeSet> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
                 intersection.retainAll(comp);
+                //System.out.println(graph.get(keys[j]) +":"+comp);
 
                 if(!intersection.isEmpty()){
                     Set<NodeSet> unionSet = new HashSet<>(graph.get(keys[j]));
@@ -139,12 +140,19 @@ public class Main {
 
     public void validate(){
         graph.forEach((k, v) -> {
-            System.out.println(k + ":" + v);
+            System.out.print(k + " [ ");
+            for(NodeSet set : v){
+                System.out.print(set.getCode() + ":" + set.getName() + " | ");
+            }
+            System.out.println(" ] ");
         });
-        ingredient.forEach((k, v) -> {
+        System.out.println("------------------------");
+        for (Map.Entry<String, String> entry : ingredient.entrySet()) {
+            String k = entry.getKey();
+            String v = entry.getValue();
             System.out.println(k + ":" + v);
-        });
-
+        }
+        System.out.println("------------------------");
         Set<String> graphKeys = new HashSet<>(graph.keySet());
         System.out.println("Graph Size : " + graphKeys.size());
         Set<String> ingredientKeys = new HashSet<>(ingredient.keySet());
