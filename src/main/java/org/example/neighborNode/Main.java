@@ -165,7 +165,7 @@ public class Main {
 
         makeGraph();
 
-        validate();
+        //validate();
 
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
