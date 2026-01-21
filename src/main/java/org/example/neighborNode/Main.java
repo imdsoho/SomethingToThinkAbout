@@ -106,12 +106,10 @@ public class Main {
         for(int i =0; i < keys.length; i++){
             String key = keys[i];
             Set<NodeSet> comp = graph.get(key);
-            System.out.println(comp);
 
             for(int j = i+1; j < keys.length; j++){
                 HashSet<NodeSet> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
                 intersection.retainAll(comp);
-                //System.out.println(graph.get(keys[j]) +":"+comp);
 
                 if(!intersection.isEmpty()){
                     Set<NodeSet> unionSet = new HashSet<>(graph.get(keys[j]));
@@ -165,7 +163,7 @@ public class Main {
 
         makeGraph();
 
-        //validate();
+        validate();
 
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
