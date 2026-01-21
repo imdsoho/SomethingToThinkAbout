@@ -6,6 +6,7 @@ import java.util.*;
 public class Main {
     ArrayList<Node> nodes = new ArrayList<>();
     Map<String,Set<String>> graph = new HashMap<>();
+    Map<String, String> ingredient = new HashMap<>();
 
     public String[] getRawDataFromCSV(String path, boolean includeTitle){
         FilesUtils filesUtils = new FilesUtils();
@@ -30,6 +31,9 @@ public class Main {
                 if(data[8].equals("동일")) {
                     Node node = new Node(data[0], data[3]);
                     nodes.add(node);
+
+                    ingredient.put(data[0], data[1]);
+                    ingredient.put(data[3], data[4]);
                 }
             }
         }
@@ -129,6 +133,12 @@ public class Main {
 //        graph.forEach((k, v) -> {
 //            System.out.println(k + ":" + v);
 //        });
+
+//        ingredient.forEach((k, v) -> {
+//            System.out.println(k + ":" + v);
+//        });
+//        System.out.println("Ingredient Count : "+ ingredient.size()); // 649
+
         validate();
 
         long endTime = System.currentTimeMillis();
