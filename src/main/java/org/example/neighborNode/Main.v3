@@ -4,8 +4,8 @@ import org.example.utils.FilesUtils;
 import java.util.*;
 
 public class Main {
-    ArrayList<RawNode> rawNodes = new ArrayList<>();
-    Map<String,Set<Node>> graph = new HashMap<>();
+    ArrayList<Node> nodes = new ArrayList<>();
+    Map<String,Set<String>> graph = new HashMap<>();
 
     public String[] getRawDataFromCSV(String path, boolean includeTitle){
         FilesUtils filesUtils = new FilesUtils();
@@ -28,17 +28,17 @@ public class Main {
             if (rawDatum != null && !rawDatum.isEmpty()){
                 String[] data = rawDatum.split(",", -1);
                 if(data[8].equals("동일")) {
-                    RawNode rawNode = new RawNode(data[0], data[1], data[3], data[4]);
-                    rawNodes.add(rawNode);
+                    Node node = new Node(data[0], data[3]);
+                    nodes.add(node);
                 }
             }
         }
     }
 
     public void dataSort(){
-        rawNodes.sort(new Comparator<RawNode>() {
+        nodes.sort(new Comparator<Node>() {
             @Override
-            public int compare(RawNode s1, RawNode s2) {
+            public int compare(Node s1, Node s2) {
                 return s1.getStart().compareTo(s2.getStart());
                 //return Integer.compare(s1.getStart(), s2.getStart());
             }
@@ -47,49 +47,28 @@ public class Main {
 
     public void nodeGroup(){
         boolean first = true;
-        String nodeKey = "";
-
-        for (RawNode raw : rawNodes){
+        String start = "";
+        for (Node node : nodes){
             if(first){
                 first = false;
-                nodeKey = raw.getStart();
+                Set<String> temp = new HashSet<>();
 
-                Set<Node> temp = new HashSet<>();
-
-                Node start = new Node();
-                start.setCode(raw.getStart());
-                start.setName(raw.getStartNM());
-
-                Node end = new Node();
-                end.setCode(raw.getEnd());
-                end.setName(raw.getEndNM());
-
+                start = node.getStart();
                 temp.add(start);
-                temp.add(end);
-
-                graph.put(start.getCode(), temp);
+                temp.add(node.getEnd());
+                graph.put(start, temp);
             }
             else{
-                if(nodeKey.equals(raw.getStart())){
-                    Node end = new Node();
-                    end.setCode(raw.getEnd());
-                    end.setName(raw.getEndNM());
-                    graph.get(nodeKey).add(end);
+                if(start.equals(node.getStart())){
+                    graph.get(start).add(node.getEnd());
                 }
                 else {
-                    nodeKey = raw.getStart();
+                    Set<String> temp = new HashSet<>();
 
-                    Set<Node> temp = new HashSet<>();
-
-                    Node start = new Node(raw.getStart(), raw.getStartNM());
-                    start.setCode(raw.getStart());
-                    start.setName(raw.getStartNM());
-
-                    Node end = new Node(raw.getEnd(), raw.getEndNM());
-
+                    start = node.getStart();
                     temp.add(start);
-                    temp.add(end);
-                    graph.put(start.getCode(), temp);
+                    temp.add(node.getEnd());
+                    graph.put(start, temp);
                 }
             }
         }
@@ -101,19 +80,14 @@ public class Main {
 
         for(int i =0; i < keys.length; i++){
             String key = keys[i];
-            Set<Node> comp = graph.get(key);
-            System.out.println(comp);
+            Set<String> comp = graph.get(key);
 
             for(int j = i+1; j < keys.length; j++){
-                HashSet<Node> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
+                HashSet<String> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
                 intersection.retainAll(comp);
-                //System.out.println(graph.get(keys[j]) +":"+comp);
 
                 if(!intersection.isEmpty()){
-                    Set<Node> unionSet = new HashSet<>(graph.get(keys[j]));
-                    unionSet.addAll(comp);
-
-                    graph.put(keys[j], unionSet);
+                    graph.get(keys[j]).addAll(comp);
                     graph.get(key).clear();
                 }
             }

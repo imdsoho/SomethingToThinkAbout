@@ -4,8 +4,8 @@ import org.example.utils.FilesUtils;
 import java.util.*;
 
 public class Main {
-    ArrayList<Node> nodes = new ArrayList<>();
-    Map<String,Set<String>> graph = new HashMap<>();
+    ArrayList<RawNode> rawNodes = new ArrayList<>();
+    Map<String,Set<NodeSet>> graph = new HashMap<>();
     Map<String, String> ingredient = new HashMap<>();
 
     public String[] getRawDataFromCSV(String path, boolean includeTitle){
@@ -29,8 +29,8 @@ public class Main {
             if (rawDatum != null && !rawDatum.isEmpty()){
                 String[] data = rawDatum.split(",", -1);
                 if(data[8].equals("동일")) {
-                    Node node = new Node(data[0], data[3]);
-                    nodes.add(node);
+                    RawNode rawNode = new RawNode(data[0], data[1], data[3], data[4]);
+                    rawNodes.add(rawNode);
 
                     ingredient.put(data[0], data[1]);
                     ingredient.put(data[3], data[4]);
@@ -40,9 +40,9 @@ public class Main {
     }
 
     public void dataSort(){
-        nodes.sort(new Comparator<Node>() {
+        rawNodes.sort(new Comparator<RawNode>() {
             @Override
-            public int compare(Node s1, Node s2) {
+            public int compare(RawNode s1, RawNode s2) {
                 return s1.getStart().compareTo(s2.getStart());
                 //return Integer.compare(s1.getStart(), s2.getStart());
             }
@@ -51,28 +51,49 @@ public class Main {
 
     public void nodeGroup(){
         boolean first = true;
-        String start = "";
-        for (Node node : nodes){
+        String nodeKey = "";
+
+        for (RawNode raw : rawNodes){
             if(first){
                 first = false;
-                Set<String> temp = new HashSet<>();
+                nodeKey = raw.getStart();
 
-                start = node.getStart();
+                Set<NodeSet> temp = new HashSet<>();
+
+                NodeSet start = new NodeSet();
+                start.setCode(raw.getStart());
+                start.setName(raw.getStartNM());
+
+                NodeSet end = new NodeSet();
+                end.setCode(raw.getEnd());
+                end.setName(raw.getEndNM());
+
                 temp.add(start);
-                temp.add(node.getEnd());
-                graph.put(start, temp);
+                temp.add(end);
+
+                graph.put(start.getCode(), temp);
             }
             else{
-                if(start.equals(node.getStart())){
-                    graph.get(start).add(node.getEnd());
+                if(nodeKey.equals(raw.getStart())){
+                    NodeSet end = new NodeSet();
+                    end.setCode(raw.getEnd());
+                    end.setName(raw.getEndNM());
+                    graph.get(nodeKey).add(end);
                 }
                 else {
-                    Set<String> temp = new HashSet<>();
+                    nodeKey = raw.getStart();
 
-                    start = node.getStart();
+                    Set<NodeSet> temp = new HashSet<>();
+
+                    NodeSet start = new NodeSet(raw.getStart(), raw.getStartNM());
+                    start.setCode(raw.getStart());
+                    start.setName(raw.getStartNM());
+
+                    NodeSet end = new NodeSet(raw.getEnd(), raw.getEndNM());
+
                     temp.add(start);
-                    temp.add(node.getEnd());
-                    graph.put(start, temp);
+                    temp.add(end);
+                    graph.put(start.getCode(), temp);
                 }
             }
         }
@@ -84,14 +105,19 @@ public class Main {
 
         for(int i =0; i < keys.length; i++){
             String key = keys[i];
-            Set<String> comp = graph.get(key);
+            Set<NodeSet> comp = graph.get(key);
+            System.out.println(comp);
 
             for(int j = i+1; j < keys.length; j++){
-                HashSet<String> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
+                HashSet<NodeSet> intersection = new HashSet<>(graph.get(keys[j]));  // s1으로 intersection 생성
                 intersection.retainAll(comp);
+                //System.out.println(graph.get(keys[j]) +":"+comp);
 
                 if(!intersection.isEmpty()){
-                    graph.get(keys[j]).addAll(comp);
+                    Set<NodeSet> unionSet = new HashSet<>(graph.get(keys[j]));
+                    unionSet.addAll(comp);
+
+                    graph.put(keys[j], unionSet);
                     graph.get(key).clear();
                 }
             }
@@ -114,8 +140,17 @@ public class Main {
     }
 
     public void validate(){
-        Set<String> keys = new HashSet<>(graph.keySet());
-        System.out.println("Graph Size : " + keys.size());
+        graph.forEach((k, v) -> {
+            System.out.println(k + ":" + v);
+        });
+        ingredient.forEach((k, v) -> {
+            System.out.println(k + ":" + v);
+        });
+
+        Set<String> graphKeys = new HashSet<>(graph.keySet());
+        System.out.println("Graph Size : " + graphKeys.size());
+        Set<String> ingredientKeys = new HashSet<>(ingredient.keySet());
+        System.out.println("Graph Size : " + ingredientKeys.size());
     }
 
     public void run(){
@@ -130,16 +165,7 @@ public class Main {
 
         makeGraph();
 
-//        graph.forEach((k, v) -> {
-//            System.out.println(k + ":" + v);
-//        });
-
-//        ingredient.forEach((k, v) -> {
-//            System.out.println(k + ":" + v);
-//        });
-//        System.out.println("Ingredient Count : "+ ingredient.size()); // 649
-
-        validate();
+        //validate();
 
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
